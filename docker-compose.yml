@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: alljobs
+      POSTGRES_PASSWORD: alljobs
+      POSTGRES_DB: alljobs
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - alljobs-db:/var/lib/postgresql/data
+volumes:
+  alljobs-db:
