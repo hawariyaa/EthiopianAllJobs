@@ -25,7 +25,34 @@ Not included: unjobs.org (its robots.txt forbids automated reading), ezega.com a
 
 A selected job stays in **This Week** for 7 days, moves to **Past Two Weeks**, and is removed after 21 days.
 
-## First-time setup
+## Run everything with Docker
+
+```bash
+cp Back-end/.env.example Back-end/.env   # first time only; add your OPENROUTER_API_KEY (and JSEARCH_API_KEY)
+docker compose up -d --build             # build and start all five services
+```
+
+| Service | Address |
+|---|---|
+| Main site | http://localhost:3000 |
+| Admin site | http://localhost:3001 |
+| Back end / admin API | http://localhost:8000, http://localhost:8001 |
+| Database | localhost:5433 |
+
+Everything is published on 127.0.0.1 only. Useful commands:
+
+```bash
+docker compose ps                         # what's running
+docker compose logs -f backend            # follow the back end (daily run, AI requests)
+docker compose up -d --build              # after changing code: rebuild and restart what changed
+docker compose down                       # stop everything (the database is kept)
+docker compose exec admin-api python -m admin_api.make_admin you@example.com
+```
+
+The containers restart on their own after a reboot, as long as Docker starts with the computer. Data lives in the
+`alljobs-db` Docker volume; `docker compose down -v` would delete it.
+
+## First-time setup (without Docker)
 
 ```bash
 cp Back-end/.env.example Back-end/.env   # then add your OPENROUTER_API_KEY
@@ -34,7 +61,7 @@ docker compose up -d db
 (cd Front-end && nvm use 22 && npm install && npx next build)
 ```
 
-## Run
+## Run (without Docker)
 
 ```bash
 # Back end, from Back-end/. Database changes are applied on start.

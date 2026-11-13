@@ -1,0 +1,11 @@
+# Used by the admin API image, which is built from the project root.
+**/.env
+**/.venv
+**/node_modules
+**/.next
+**/__pycache__
+**/.pytest_cache
+.git
+Front-end
+Admin/web
+Back-end/tests

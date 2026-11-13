@@ -1,3 +1,7 @@
+# Starts the whole app:  docker compose up -d --build
+#   Main site   http://localhost:3000
+#   Admin site  http://localhost:3001
+# Every port is published on 127.0.0.1 only, so nothing is reachable from other computers.
 services:
   db:
     image: postgres:17-alpine
@@ -10,5 +14,59 @@ services:
       - "127.0.0.1:5433:5432"
     volumes:
       - alljobs-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alljobs -d alljobs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./Back-end
+    restart: unless-stopped
+    env_file: ./Back-end/.env  # OPENROUTER_API_KEY, JSEARCH_API_KEY and other settings
+    environment:
+      DATABASE_URL: postgresql+psycopg://alljobs:alljobs@db:5432/alljobs
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  frontend:
+    build: ./Front-end
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - backend
+
+  admin-api:
+    build:
+      context: .
+      dockerfile: Admin/api/Dockerfile
+    restart: unless-stopped
+    env_file: ./Back-end/.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://alljobs:alljobs@db:5432/alljobs
+    ports:
+      - "127.0.0.1:8001:8001"
+    depends_on:
+      backend:
+        condition: service_healthy  # the back end applies database changes before the admin reads them
+
+  admin-web:
+    build: ./Admin/web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3001"
+    depends_on:
+      - admin-api
+
 volumes:
   alljobs-db:

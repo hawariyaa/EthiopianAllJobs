@@ -38,3 +38,9 @@ app = FastAPI(title="AllJobs Ethiopia", lifespan=lifespan)
 app.include_router(auth.router)
 app.include_router(profile.router)
 app.include_router(jobs.router)
+
+
+@app.get("/api/health", include_in_schema=False)
+def health():
+    """For Docker: the app only starts answering once database changes have been applied."""
+    return {"ok": True}

@@ -457,6 +457,10 @@ def test_each_job_is_sent_short(factory):
     assert len(sent.split("Listings:\n", 1)[1]) < matching.SNIPPET_CHARS + 100
 
 
+def test_health_check_needs_no_login(client):
+    assert client.get("/api/health").json() == {"ok": True}
+
+
 def test_parse_json_reply_handles_code_fences():
     assert parse_json_reply('```json\n{"relevant": [1]}\n```') == {"relevant": [1]}
 
